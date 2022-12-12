@@ -48,10 +48,6 @@ Y_test <- testSet$income
 
 X_test <- subset(testSet,select=-c(income))
 
-# scaling 
-library(dplyr)
-trainingSet %>% mutate(across(where(is.numeric), scale))
-X_test %>% mutate(across(where(is.numeric), scale))
 
 
 # one hot encoding for train set 
