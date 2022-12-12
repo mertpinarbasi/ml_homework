@@ -1,4 +1,4 @@
-library(xgboost)
+library(xgboost) # decision tree library
 require(caTools)
 library(caret)
 
@@ -54,8 +54,8 @@ X_test <- subset(testSet,select=-c(income))
 
 dmy <- dummyVars(" ~ .", data = X_train, fullRank = T)
 X_train <- data.frame(predict(dmy, newdata = X_train))
-dmyTest <- dummyVars(" ~ .", data = X_train, fullRank = T)
-X_test <- data.frame(predict(dmy, newdata = X_test))
+dmyTest <- dummyVars(" ~ .", data = X_test, fullRank = T) #?
+X_test <- data.frame(predict(dmyTest, newdata = X_test))
 
 #state parameters
 parameters <-list(eta = 0.3 ,
@@ -67,8 +67,19 @@ parameters <-list(eta = 0.3 ,
                   objective="binary:logistic",
                   booster="gbtree")
 
+
+cv.nround = 1000
+cv.nfold = 5
+best.cv <- xgb.cv(data= as.matrix( X_train), params = parameters, nthread=6, 
+               nfold=cv.nfold, nrounds=cv.nround,early.stop.round=8,
+               verbose = T,maximize=FALSE)
+
+min_logloss = min(best.cv[, test.mlogloss.mean])
+min_logloss_index = which.min(best.cv[, test.mlogloss.mean])
+
+
 #run xgboost
-model <- xgboost(data= as.matrix( X_train),label = Y_train,set.seed(1502),nround=50,params=parameters,verbose=1)
+ model <- xgboost(data= as.matrix( X_train),label = Y_train,set.seed(1502),nround=1000,params=parameters,verbose=1)
 
 #evaluate model 
 predictions = predict(model , newdata = as.matrix(X_test))
@@ -78,3 +89,6 @@ predictions = ifelse(predictions>0.5,1,0)
 confusionMatrix(table(predictions,as.matrix(Y_test)))
 
 xgb.plot.shap(data =as.matrix(X_test),model = model,top_n =5 )
+
+
+
