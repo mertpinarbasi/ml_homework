@@ -48,27 +48,34 @@ df_income$native.country[df_income$native.country == ' ?'] <- mod_country_df
 library(dplyr)
 df_income <-df_income %>%  mutate(across(c(where(is.numeric), -income), scale))
 
-# converting target feature to categorical data
-df_income$income <-as.factor(df_income$income)
+
+# one hot encoding 
+
+dmy <- dummyVars(" ~ .", data = df_income, fullRank = T)
+df_income <- data.frame(predict(dmy, newdata = df_income))
 
 
 
 
 # sampling 
 set.seed(101) 
-dataIndex <- createDataPartition(df_income$income,p=0.70,list=FALSE)
+dataIndex <- createDataPartition(df_income$income,p=0.60,list=FALSE)
 trainSet <- df_income[dataIndex,]
 validationSet <- df_income[-dataIndex,]
-
 
 
 # k-fold cross validation 
 
 # control settings
-ctrlSetting <- trainControl(method="cv",number=10)
-grid<- expand.grid(.k=c(1:5)) # store k results in grid 
+ctrlSetting <- trainControl(method="cv",number=3)
+grid<- expand.grid(.k=c(1:3)) # store k results in grid 
 
-set.seed(213123)
+# converting target feature to categorical data
+trainSet$income <-as.factor(trainSet$income)
+validationSet$income<-as.factor(validationSet$income)
+
+
+set.seed(12)
 KNN_fit<-train(income~.,data=trainSet,method="glm",trControl=ctrlSetting,family=binomial(link = logit),metric="Accuracy")
 KNN_class<-predict(KNN_fit,newdata=validationSet)
 confusionMatrix(KNN_class,validationSet$income,positive="1")

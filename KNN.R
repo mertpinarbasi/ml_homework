@@ -48,25 +48,36 @@ df_income$native.country[df_income$native.country == ' ?'] <- mod_country_df
 library(dplyr)
 df_income <-df_income %>%  mutate(across(c(where(is.numeric), -income), scale))
 
-# converting target feature to categorical data
-df_income$income <-as.factor(df_income$income)
-
 
 
 
 # sampling 
-set.seed(101) 
+set.seed(1010) 
 dataIndex <- createDataPartition(df_income$income,p=0.70,list=FALSE)
 trainSet <- df_income[dataIndex,]
 validationSet <- df_income[-dataIndex,]
 
 
+# one hot encoding 
+
+dmy <- dummyVars(" ~ .", data = trainSet, fullRank = T)
+trainSet <- data.frame(predict(dmy, newdata = trainSet))
+
+dmyValidation <- dummyVars(" ~ .", data = validationSet, fullRank = T)
+validationSet <- data.frame(predict(dmyValidation, newdata = validationSet))
+
 
 # k-fold cross validation 
 
+
 # control settings
-ctrlSetting <- trainControl(method="cv",number=20)
-grid<- expand.grid(.k=c(1:5)) # store k results in grid 
+ctrlSetting <- trainControl(method="cv",number=3)
+grid<- expand.grid(.k=c(1:3 )) # store k results in grid
+
+# converting target feature to categorical data
+trainSet$income <-as.factor(trainSet$income)
+
+
 
 set.seed(213123)
 KNN_fit<-train(income~.,data=trainSet,method="knn",trControl=ctrlSetting,tuneGrid=grid)
