@@ -68,11 +68,12 @@ best_auc_index = 0
 
 for (iter in 1:100) {
   
+  
   param <-list(eta = 0.3 ,
                     max_depth= 6,
                     subsample=1,colsample_bytree=1
                     ,min_child_weight=1,
-                    gamma=0,set.seed=1502
+                    gamma=0,set.seed=best_seednumber
                     ,eval_metric="auc",
                     objective="binary:logistic",
                     booster="gbtree")
@@ -82,21 +83,22 @@ for (iter in 1:100) {
   cv.nfold = 10
   seed.number = sample.int(10000, 1)[[1]]
   set.seed(seed.number)
-  
-  
-  mdcv <- xgb.cv(data= as.matrix( X_train), label = Y_train,params = parameters, nthread=6, 
-                 nfold=cv.nfold, nrounds=cv.nround, early_stopping_rounds = 15,
-                 verbose = T,maximize=FALSE)
-  
-  
-  min_auc_index = mdcv$best_iteration
-  min_auc = mdcv$evaluation_log[min_auc_index]$test_auc_mean
  
   
   
-  if (min_auc< best_auc) {
-    best_auc = min_auc
-    best_auc_index = min_auc_index
+  mdcv <- xgb.cv(data= as.matrix( X_train), label = Y_train,params = param, nthread=6, 
+                 nfold=cv.nfold, nrounds=cv.nround, early_stopping_rounds = 6,
+                 verbose = T,maximize=FALSE)
+  
+  
+  max_auc_index = mdcv$best_iteration
+  max_auc = mdcv$evaluation_log[max_auc_index]$test_auc_mean
+ 
+  
+  
+  if (max_auc> best_auc) {
+    best_auc = max_auc
+    best_auc_index = max_auc_index
     best_seednumber = seed.number
     best_param = param
   }
@@ -108,7 +110,7 @@ nround = best_auc_index
 set.seed(best_seednumber)
 
 #run xgboost
- model <- xgboost(data= as.matrix( X_train),label = Y_train,set.seed(1502),nround=nround,params=best_param,verbose=1)
+ model <- xgboost(data= as.matrix( X_train),label = Y_train,set.seed(best_seednumber),nround=1000,params=best_param,verbose=1)
 
 #evaluate model 
 predictions = predict(model , newdata = as.matrix(X_test))
@@ -120,7 +122,7 @@ confusionMatrix(table(predictions,as.matrix(Y_test)))
 xgb.plot.shap(data =as.matrix(X_test),model = model,top_n =5 )
 
 
-
+##########################
 
 #run xgboost
 model <- xgboost(data= as.matrix( X_train),label = Y_train,set.seed(1502),nround=1000,params=best_param,verbose=1)
