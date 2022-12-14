@@ -34,6 +34,14 @@ df_income$workclass[df_income$workclass == ' ?'] <- mod_workclass_df
 df_income$occupation[df_income$occupation == ' ?'] <- mod_occupation_df
 df_income$native.country[df_income$native.country == ' ?'] <- mod_country_df
 
+
+# one hot encoding for train set 
+
+dmy <- dummyVars(" ~ .", data = df_income, fullRank = T)
+df_income <-  data.frame(predict(dmy, newdata = df_income))
+
+
+
 # sampling 
 set.seed(101) 
 sample = sample.split(df_income$income, SplitRatio = .75)
@@ -49,15 +57,6 @@ Y_test <- testSet$income
 X_test <- subset(testSet,select=-c(income))
 
 
-
-# one hot encoding for train set 
-
-dmyAllSet <- dummyVars(" ~ .", data = trainingSet, fullRank = T)
-trainingSet <-  data.frame(predict(dmyAllSet, newdata = trainingSet))
-
-
-dmyTest <- dummyVars(" ~ .", data = X_test, fullRank = T)
-X_test <- data.frame(predict(dmyTest, newdata = X_test))
 
 
 # evalution of svm 
@@ -88,6 +87,18 @@ cv = lapply(folds, function(x) { # start of function
 accuracy = mean(as.numeric(cv))
 accuracy
 
+
+trainingSet$income <-as.factor(trainingSet$income)
+
 # Visualising the Training set results
 
-plot(svm_classifier,trainingSet,age~hours.per.week)
+plot(svm_classifier,trainingSet,hours.per.week~age)
+  
+  library(ggplot2)
+  
+  scatter_plot <- ggplot(data = trainingSet, aes(x = age, y =hours.per.week, color = income)) + geom_point()   +  scale_color_manual(values = c("0" = "red","1"= "blue"))
+    layered_plot <-  scatter_plot  
+  
+  #display plot
+  layered_plot
+  
