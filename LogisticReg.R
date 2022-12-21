@@ -59,7 +59,7 @@ df_income <- data.frame(predict(dmy, newdata = df_income))
 
 # sampling 
 set.seed(101) 
-dataIndex <- createDataPartition(df_income$income,p=0.60,list=FALSE)
+dataIndex <- createDataPartition(df_income$income,p=0.6,list=FALSE)
 trainSet <- df_income[dataIndex,]
 validationSet <- df_income[-dataIndex,]
 
@@ -76,6 +76,19 @@ validationSet$income<-as.factor(validationSet$income)
 
 
 set.seed(12)
-KNN_fit<-train(income~.,data=trainSet,method="glm",trControl=ctrlSetting,family=binomial(link = logit),metric="Accuracy")
-KNN_class<-predict(KNN_fit,newdata=validationSet)
-confusionMatrix(KNN_class,validationSet$income,positive="1")
+logisticRegModel<-train(income~.,data=trainSet,method="glm",trControl=ctrlSetting,family=binomial(link = logit),metric="Accuracy")
+logisticRegClass<-predict(logisticRegModel,newdata=validationSet)
+confusionMatrix(logisticRegClass,validationSet$income,positive="1")
+plot(logisticRegClass,df_income)
+
+library(ggplot2)
+ggplot(df_income, aes(x=hours.per.week, y=income)) + geom_point() +
+  stat_smooth(method="glm", color="green", se=FALSE,
+              method.args = list(family=binomial))
+ggplot(logisticRegModel, aes(x=hours.per.week, y=income)) + geom_point() +
+  stat_smooth(method="glm", color="red", se=FALSE,
+              method.args = list(family=binomial))
+
+plot(income ~ hours.per.week, data=df_income)
+lines(income~ hours.per.week, logisticRegClass, lwd=2, col="green")
+

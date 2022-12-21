@@ -102,3 +102,6 @@ plot(svm_classifier,trainingSet,hours.per.week~age)
   #display plot
   layered_plot
   
+  pairs(df_income[,c('age','hours.per.week')],pch=21,
+        bg = c("green3", "red")[df_income$income])
+  
