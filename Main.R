@@ -116,20 +116,29 @@ set.seed(best_seednumber)
 predictions = predict(model , newdata = as.matrix(X_test))
 predictions = ifelse(predictions>0.5,1,0)
 
-#check accuracy
-confusionMatrix(table(predictions,as.matrix(Y_test)))
-
-xgb.plot.shap(data =as.matrix(X_test),model = model,top_n =5 )
 
 
-##########################
-
-#run xgboost
-model <- xgboost(data= as.matrix( X_train),label = Y_train,set.seed(1502),nround=1000,params=best_param,verbose=1)
 
 #evaluate model 
 predictions = predict(model , newdata = as.matrix(X_test))
 predictions = ifelse(predictions>0.5,1,0)
 
 #check accuracy
-confusionMatrix(table(predictions,as.matrix(Y_test)))
+
+result <- confusionMatrix(table(predictions,as.matrix(Y_test)))
+precision <- result$byClass['Pos Pred Value']    
+recall <- result$byClass['Sensitivity']
+
+#plot 
+library(DiagrammeR)
+xgb.plot.tree(model = model, trees = 1)
+xgb.plot.shap(data =as.matrix(X_test),model = model,top_n =5 )
+
+
+
+
+
+
+#run xgboost
+model <- xgboost(data= as.matrix( X_train),label = Y_train,set.seed(1502),nround=1000,params=best_param,verbose=1)
+

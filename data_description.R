@@ -1,8 +1,6 @@
-library(caTools)
 library(caret)
-library(gains)
 library(pROC)
-
+library(ggplot2)
 
 dataset <-read.csv("income_evaluation.csv")
 
@@ -45,7 +43,9 @@ dmy <- dummyVars(" ~ .", data = df_income, fullRank = T)
 df_income <- data.frame(predict(dmy, newdata = df_income))
 
 
-library(ggplot2)
+
+
+
 ## corellation matrix 
 
 
@@ -84,11 +84,29 @@ ggheatmap +
     legend.direction = "horizontal")+
   guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
    title.position = "top", title.hjust = 0.5))
-######################################
-library(dplyr)
 
-df_grt50 <- df_income[ which(df_income$income==" >50K"), ]
-df_grt50 %>% ggplot(aes(education.num, hours.per.week)) +
-  (geom_point()) + 
-  ggtitle("Income greater 50K in relation to years of education and hours per week") +
+#income distribution
+
+library(dplyr)
+df_income$income <-as.factor(df_income$income)
+df_income %>% ggplot(aes(education.num, hours.per.week)) +
+  (geom_point(aes(col=income))) + 
+  scale_color_manual(values = c("1" = "springgreen3", "0" = "tomato"))+
+
+  ggtitle("Income Distribution depending on years of education and working hours per week") +
   labs(x="Years of education",y="Hours per Week")
+
+
+ggplot(df_income, aes(x=income,fill=income)) + geom_bar() +
+  scale_x_discrete(labels=c("<=50K", ">50K"))+
+  scale_fill_manual(values=c("tomato", "springgreen3")) +
+  labs(x="income", y="count")
+
+
+# age corelattion
+
+ggplot(df_income) + aes(x=age, group=income,fill=income) + 
+  geom_histogram( binwidth=1, color='black')+
+  scale_fill_manual(values=c("tomato", "springgreen3")) +
+  labs(x="Age",y="Count")+ 
+  ggtitle("Income Distribution Correllation Between  Age")

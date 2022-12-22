@@ -80,10 +80,17 @@
     set.seed(213123)
     KNN_fit<-train(income~.,data=trainSet,method="knn",trControl=ctrlSetting,tuneGrid=grid)
     KNN_class<-predict(KNN_fit,newdata=validationSet)
-    confusionMatrix(KNN_class,validationSet$income,positive="1")
     
     library(ggplot2)
     ggplot(data = dataset, aes(x = age, y = hours.per.week, col = income)) +
       geom_point()
     plot( KNN_fit)
+    KNN_fit$results
+    
+    
+    #results
+    result <- confusionMatrix(KNN_class,validationSet$income,positive="1")
+    precision <- result$byClass['Pos Pred Value']    
+    recall <- result$byClass['Sensitivity']
+    
     

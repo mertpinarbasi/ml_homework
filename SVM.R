@@ -93,15 +93,5 @@ trainingSet$income <-as.factor(trainingSet$income)
 # Visualising the Training set results
 
 plot(svm_classifier,trainingSet,hours.per.week~age)
-  
-  library(ggplot2)
-  
-  scatter_plot <- ggplot(data = trainingSet, aes(x = age, y =hours.per.week, color = income)) + geom_point()   +  scale_color_manual(values = c("0" = "red","1"= "blue"))
-    layered_plot <-  scatter_plot  
-  
-  #display plot
-  layered_plot
-  
-  pairs(df_income[,c('age','hours.per.week')],pch=21,
-        bg = c("green3", "red")[df_income$income])
+
   
